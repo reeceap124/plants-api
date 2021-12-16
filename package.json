@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
+    "posttest": "cross-env NODE_ENV=test node api/utils/testCleanup.js",
     "start": "node index.js",
     "server": "nodemon index.js"
   },
@@ -12,11 +13,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "axios": "^0.24.0",
+    "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "pg": "^8.7.1"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "jest": "^27.4.4",
     "nodemon": "^2.0.15",
     "supertest": "^6.1.6"
