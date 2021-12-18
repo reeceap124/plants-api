@@ -1,3 +1,4 @@
+const { errorMsg } = require("../../../utils/helpers");
 module.exports = {
   add,
   find,
@@ -5,10 +6,6 @@ module.exports = {
   remove
 };
 
-function errorMsg(error, msg, rtn = null) {
-  console.error(msg, { message: error.message, error });
-  return rtn;
-}
 /*
 function dynamicUpdate(table, change, where) {
   let base = ["UPDATE ", table, " SET"];
@@ -59,7 +56,7 @@ async function find(pg, id) {
         `,
       [id]
     );
-    return rows[0];
+    return rows.length ? rows[0] : null;
   } catch (error) {
     return errorMsg(error, `Failed to find plant with id: ${id}`);
   }
@@ -102,7 +99,7 @@ async function remove(pg, id) {
 }
 
 if (require.main === module) {
-  const pool = require("../../utils/pool");
+  const pool = require("../../../utils/pool");
   const getStuff = async () => {
     const client = await pool.connect();
     try {

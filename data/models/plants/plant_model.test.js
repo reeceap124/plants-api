@@ -1,5 +1,5 @@
 const model = require("./plant_model");
-const pg = require("../../utils/pool");
+const pg = require("../../../utils/pool");
 
 describe("Functions for plant table", () => {
   let client;
@@ -15,12 +15,10 @@ describe("Functions for plant table", () => {
       `SELECT count(*)::integer from plants`
     );
     const initialCount = initialData.rows[0].count;
-    console.log({ initialCount });
     const newPlant = await model.add(client, {
       commonName: "test common",
       scientificName: "test scientific"
     });
-    console.log("newPlant: ", newPlant);
     expect(newPlant.common_name).toBe("test common");
     expect(newPlant.scientific_name).toBe("test scientific");
     const followUp = await client.query(`SELECT count(*)::integer from plants`);
@@ -50,10 +48,12 @@ describe("Functions for plant table", () => {
   });
 
   it("should remove plants", async () => {
-    const allPlants = await client.query("select id from plants");
-    const allIds = allPlants.rows.map((p) => p.id);
-    await Promise.all(allIds.map((p) => model.remove(client, p)));
-    const afterRemoval = await client.query("select * from plants");
-    expect(afterRemoval.rows.length).toBe(0);
+    const toDelete = await model.add(client, {
+      common_name: "to be removed",
+      scientific_name: "to be removed scientifically"
+    });
+    await model.remove(client, toDelete.id);
+    const deleted = await model.find(client, toDelete.id);
+    expect(deleted).toBe(null);
   });
 });
