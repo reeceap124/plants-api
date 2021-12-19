@@ -13,6 +13,7 @@ const setup = async () => {
     ('sold'),
     ('dead');  
   `);
+  await client.release();
 };
 
 module.exports = async () => await setup();
