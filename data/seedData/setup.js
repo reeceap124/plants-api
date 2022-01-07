@@ -1,6 +1,9 @@
 const pg = require("../../utils/pool");
 const setup = async () => {
   const client = await pg.connect();
+  await client.query(
+    `truncate plants, inventory_statuses restart identity cascade`
+  );
   await client.query(`
     INSERT INTO plants (common_name, scientific_name)
     VALUES 

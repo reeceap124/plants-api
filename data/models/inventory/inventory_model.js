@@ -1,16 +1,17 @@
-const { errorMsg } = require("../../../utils/helpers");
+const { errorMsg } = require('../../../utils/helpers')
 
 module.exports = {
   add,
-  find
-};
+  find,
+  update
+}
 
 async function add(pg, item, parent = null) {
-  const { plants_key, status_key, cost } = item;
+  const { plants_key, status_key, cost } = item
   try {
-    const parentPlant = await find(pg, parent);
+    const parentPlant = await find(pg, parent)
     if (parentPlant && parentPlant.plants_key !== plants_key) {
-      throw new Error("Parent plant type must match the new plant to be added");
+      throw new Error('Parent plant type must match the new plant to be added')
     }
     const { rows } = await pg.query(
       `
@@ -26,10 +27,10 @@ async function add(pg, item, parent = null) {
     join inventory_statuses s on i.status_key = s.id
     `,
       [plants_key, parentPlant?.ancestry, status_key, cost]
-    );
-    return rows[0];
+    )
+    return rows[0]
   } catch (err) {
-    return errorMsg(err, "Failed to add plant");
+    return errorMsg(err, 'Failed to add plant')
   }
 }
 
@@ -43,9 +44,68 @@ async function find(pg, id) {
             WHERE i.id = $1;
         `,
       [id]
-    );
-    return rows?.length ? rows[0] : null;
+    )
+    return rows?.length ? rows[0] : null
   } catch (err) {
-    return errorMsg(err, "Failed to get inventory item with id: " + id);
+    return errorMsg(err, 'Failed to get inventory item with id: ' + id)
+  }
+}
+
+async function update(pg, change = {}, toChange = { id: 0 }) {
+  if (change.id) {
+    delete change.id
+  }
+  if (change.ancestry) {
+    console.error('unable to update ancestry yet')
+    return []
+  }
+
+  const columns = {
+    id: 'id',
+    plants_key: 'plants_key',
+    ancestry: 'ancestry',
+    status_key: 'status_key',
+    cost: 'cost'
+  }
+
+  let base = ['UPDATE ', 'inventory', ' SET']
+  let values = []
+  const setCols = Object.keys(change)
+    .map((key, index, arr) => {
+      values.push(change[key])
+      return ` %I = $${index + 1}${index !== arr.length - 1 ? ',' : ''}`
+    })
+    .join('')
+  const setVals = Object.keys(change)
+    .map((key, index, arr) => {
+      return ` '${columns[key]}'${index !== arr.length - 1 ? ',' : ''}`
+    })
+    .join('')
+  const { rows: setRes } = await pg.query(`select format(
+    '${setCols}',
+    ${setVals}
+  )`)
+  const set = setRes[0].format
+  let where = Object.keys(toChange).map((key, index, arr) => {
+    values.push(toChange[columns[key]])
+    return ` ${columns[key]} = $${index + 1 + Object.keys(change).length} ${
+      index !== arr.length - 1 ? 'AND ' : ''
+    }`
+  })
+
+  const subQuery = [...base, ...set, ' WHERE', ...where, ' RETURNING *'].join(
+    ''
+  )
+  const query = `
+    with updated as (${subQuery})
+    SELECT i.id, i.plants_key, i.ancestry, i.status_key, i.cost::integer, p.common_name, p.scientific_name, s.status from updated i
+    JOIN plants p on i.plants_key = p.id
+    JOIN inventory_statuses s on i.status_key = s.id
+  `
+  try {
+    const { rows } = await pg.query(query, values)
+    return rows
+  } catch (err) {
+    return errorMsg(err, 'Failed to update inventory for: ' + toChange)
   }
 }

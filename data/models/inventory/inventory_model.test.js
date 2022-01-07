@@ -42,7 +42,44 @@ describe("inventory tests", () => {
     expect(secondNew.cost).toBe(0);
   });
 
-  it("Should update inventory ", () => {
-    expect(true).toBe(true);
+  it("Should update inventory ", async () => {
+    // update a specific inventory item.
+    // update inventory with a specific ancestry.
+    // update
+    const motherItem1 = await model.add(client, {
+      plants_key: plant.rows[0].id,
+      status_key: statuses.rows[0].id,
+      cost: 100
+    });
+    const motherItem2 = await model.add(
+      client,
+      {
+        plants_key: plant.rows[0].id,
+        status_key: statuses.rows[0].id,
+        cost: 75
+      },
+      motherItem1.id
+    );
+
+    const childItem = await model.add(
+      client,
+      {
+        plants_key: motherItem1.plants_key,
+        status_key: motherItem1.status_key,
+        cost: 50
+      },
+      motherItem2.id
+    );
+
+    expect(childItem.ancestry).toBe(
+      `${motherItem1.id}.${motherItem2.id}.${childItem.id}`
+    );
+    const updatedChild = await model.update(
+      client,
+      { cost: 0 },
+      { id: childItem.id }
+    );
+    expect(updatedChild[0].id).toBe(childItem.id);
+    expect(updatedChild[0].cost).toBe(0);
   });
 });
