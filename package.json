@@ -23,7 +23,6 @@
     "supertest": "^6.1.6"
   },
   "jest": {
-    "globalSetup": "<rootDir>/data/seedData/setup.js",
-    "globalTeardown": "<rootDir>/data/seedData/tearDown.js"
+    "globalSetup": "<rootDir>/data/seedData/setup.js"
   }
 }

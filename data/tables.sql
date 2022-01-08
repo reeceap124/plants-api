@@ -23,6 +23,8 @@ CREATE TABLE IF NOT EXISTS public.inventory
     ancestry ltree NOT NULL,
     status_key bigint NOT NULL,
     cost numeric NOT NULL DEFAULT 0,
+    acquired_from text,
+    acquired_date date DEFAULT NOW()::date,
     CONSTRAINT inventory_pkey PRIMARY KEY (id),
     CONSTRAINT inventory_plants_key_fkey FOREIGN KEY (plants_key)
         REFERENCES public.plants (id) MATCH SIMPLE
@@ -62,3 +64,11 @@ CREATE TABLE IF NOT EXISTS public.sales
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
 );
+
+-- where it came from
+-- acquire date
+-- personal, mother, not available, for sale, sold, dead
+
+-- how much an original purchase has paid off
+-- keep track of plant statuses
+-- tag scanning ???
