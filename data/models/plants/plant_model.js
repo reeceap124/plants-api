@@ -1,10 +1,10 @@
-const { errorMsg } = require("../../../utils/helpers");
+const { errorMsg } = require('../../../utils/helpers')
 module.exports = {
   add,
   find,
   update,
   remove
-};
+}
 
 /*
 function dynamicUpdate(table, change, where) {
@@ -24,7 +24,7 @@ function dynamicUpdate(table, change, where) {
 }
 */
 async function add(pg, plant) {
-  const { common_name, commonName, scientific_name, scientificName } = plant;
+  const { common_name, commonName, scientific_name, scientificName } = plant
   try {
     const { rows } = await pg.query(
       `
@@ -33,10 +33,10 @@ async function add(pg, plant) {
         RETURNING *
     `,
       [common_name || commonName, scientific_name || scientificName]
-    );
-    return rows[0];
+    )
+    return rows[0]
   } catch (error) {
-    return errorMsg(error, "Failed to add that plant");
+    return errorMsg(error, 'Failed to add that plant')
   }
 }
 
@@ -55,10 +55,10 @@ async function find(pg, id) {
             WHERE id = $1
         `,
       [id]
-    );
-    return rows.length ? rows[0] : null;
+    )
+    return rows.length ? rows[0] : null
   } catch (error) {
-    return errorMsg(error, `Failed to find plant with id: ${id}`);
+    return errorMsg(error, `Failed to find plant with id: ${id}`)
   }
 }
 
@@ -76,10 +76,10 @@ async function update(pg, change) {
         change.scientific_name || change.scientificName,
         change.id
       ]
-    );
-    return rows[0];
+    )
+    return rows[0]
   } catch (error) {
-    return errorMsg(error, "Failed to update plant");
+    return errorMsg(error, 'Failed to update plant')
   }
 }
 async function remove(pg, id) {
@@ -91,25 +91,24 @@ async function remove(pg, id) {
         RETURNING *
         `,
       [id]
-    );
-    return rows[0];
+    )
+    return rows[0]
   } catch (error) {
-    return errorMsg(error, "Failed to delete");
+    return errorMsg(error, 'Failed to delete')
   }
 }
 
 if (require.main === module) {
-  const pool = require("../../../utils/pool");
+  const pool = require('../../../utils/pool')
   const getStuff = async () => {
-    const client = await pool.connect();
+    const client = await pool.connect()
     try {
-      const data = await find(client, { id: 1 });
-      console.log({ data });
+      const data = await find(client, { id: 1 })
     } catch (error) {
-      errorMsg(error, "didn work");
+      errorMsg(error, 'didn work')
     } finally {
-      client.release();
+      client.release()
     }
-  };
-  getStuff().then(() => process.exit(1));
+  }
+  getStuff().then(() => process.exit(1))
 }

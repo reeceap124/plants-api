@@ -21,7 +21,7 @@ const setup = async () => {
   `)
   await client.query(`
   INSERT INTO inventory (plants_key, status_key, cost, ancestry)
-  VALUES (1, 4, 100, '1'), (1, 4, 0, '1.2')
+  VALUES (1, 4, 100, '1'), (1, 4, 0, '1.2'), (1, 4, 0, '1.3'), (1, 4, 0, '1.4')
   `)
   await client.query(`
   INSERT INTO sale_venues (name)

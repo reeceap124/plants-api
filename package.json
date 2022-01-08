@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
+    "test:dirty_ending": "cross-env SKIP_CLEANUP=true jest",
     "start": "node index.js",
     "server": "nodemon index.js"
   },
@@ -23,6 +24,7 @@
     "supertest": "^6.1.6"
   },
   "jest": {
-    "globalSetup": "<rootDir>/data/seedData/setup.js"
+    "globalSetup": "<rootDir>/data/seedData/setup.js",
+    "globalTeardown": "<rootDir>/data/seedData/tearDown.js"
   }
 }

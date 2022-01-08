@@ -1,3 +1,5 @@
+-- SCHEMA TESTS???
+
 -- CREATE EXTENSION ltree;
 -- PLANTS
 CREATE TABLE public.plants
