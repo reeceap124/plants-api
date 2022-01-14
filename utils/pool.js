@@ -11,7 +11,6 @@ const dbString = () => {
   return process.env.DATABASE_URL
 }
 const connectionString = dbString()
-console.log('connection string', connectionString)
 const databaseConfig = { connectionString, ssl: { rejectUnauthorized: false } }
 const pool = new Pool(databaseConfig)
 pool.on('connect', (err, client) => {
