@@ -8,11 +8,11 @@ const dbString = () => {
     console.log('ENV is test')
     return process.env.TEST_DATABASE_URL
   }
-  return process.env.DATABASE_URL + '?rejectUnauthorized=false'
+  return process.env.DATABASE_URL
 }
 const connectionString = dbString()
 console.log('connection string', connectionString)
-const databaseConfig = { connectionString }
+const databaseConfig = { connectionString, ssl: { rejectUnauthorized: false } }
 const pool = new Pool(databaseConfig)
 pool.on('connect', (err, client) => {
   console.log('connected to db')
