@@ -1,6 +1,6 @@
 -- SCHEMA TESTS???
 
--- CREATE EXTENSION ltree;
+CREATE EXTENSION ltree;
 
 -- USERS
 CREATE TABLE public.users
@@ -11,8 +11,7 @@ CREATE TABLE public.users
     PRIMARY KEY (id)
 );
 
-ALTER TABLE IF EXISTS public.users
-    OWNER to postgres;
+ALTER TABLE IF EXISTS public.users;
 
 -- PLANTS
 CREATE TABLE public.plants
