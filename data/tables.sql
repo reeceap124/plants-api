@@ -1,6 +1,19 @@
 -- SCHEMA TESTS???
 
 -- CREATE EXTENSION ltree;
+
+-- USERS
+CREATE TABLE public.users
+(
+    id bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
+    email text NOT NULL,
+    password text NOT NULL,
+    PRIMARY KEY (id)
+);
+
+ALTER TABLE IF EXISTS public.users
+    OWNER to postgres;
+
 -- PLANTS
 CREATE TABLE public.plants
 (
@@ -27,6 +40,7 @@ CREATE TABLE IF NOT EXISTS public.inventory
     cost numeric NOT NULL DEFAULT 0,
     acquired_from text,
     acquired_date date DEFAULT NOW()::date,
+    users_key bigint NOT NULL,
     CONSTRAINT inventory_pkey PRIMARY KEY (id),
     CONSTRAINT inventory_plants_key_fkey FOREIGN KEY (plants_key)
         REFERENCES public.plants (id) MATCH SIMPLE
@@ -34,6 +48,10 @@ CREATE TABLE IF NOT EXISTS public.inventory
         ON DELETE NO ACTION,
     CONSTRAINT inventory_status_key_fkey FOREIGN KEY (status_key)
         REFERENCES public.inventory_statuses (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    CONSTRAINT inventory_users_key_fkey FOREIGN KEY (users_key)
+        REFERENCES public.users (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
 );
