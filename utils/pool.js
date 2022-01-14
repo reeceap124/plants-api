@@ -8,7 +8,7 @@ const dbString = () => {
     console.log('ENV is test')
     return process.env.TEST_DATABASE_URL
   }
-  return process.env.DATABASE_URL
+  return process.env.DATABASE_URL + '?rejectUnauthorized=false'
 }
 const connectionString = dbString()
 console.log('connection string', connectionString)
