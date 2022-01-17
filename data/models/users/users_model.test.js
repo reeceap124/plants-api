@@ -27,5 +27,10 @@ describe('users tests', () => {
     const user = await model.find(client, testUser.id)
 
     expect(testUser.id).toBe(user[0].id)
+
+    const secondFind = await model.findBy(client, { email: testUser.email })
+
+    expect(secondFind.id).toBe(testUser.id)
+    expect(secondFind.email).toBe(user[0].email)
   })
 })

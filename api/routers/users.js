@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const Users = require('../models/users/users_model')
+const Users = require('../../data/models/users/users_model')
 const pg = require('../../utils/pool')
 const { errorMsg } = require('../../utils/helpers')
 

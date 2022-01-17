@@ -8,6 +8,7 @@ CREATE TABLE public.users
     id bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
     email text NOT NULL,
     password text NOT NULL,
+    username text,
     PRIMARY KEY (id)
 );
 

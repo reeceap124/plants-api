@@ -4,14 +4,18 @@ const dotenv = require('dotenv')
 
 dotenv.config()
 const dbString = () => {
+  console.log('NODE_ENV: ', process.env.NODE_ENV)
   if (process.env.NODE_ENV === 'test') {
-    console.log('ENV is test')
     return process.env.TEST_DATABASE_URL
   }
   return process.env.DATABASE_URL
 }
 const connectionString = dbString()
-const databaseConfig = { connectionString, ssl: { rejectUnauthorized: false } }
+const ssl =
+  process.env.NODE_ENV === 'production'
+    ? { ssl: { rejectUnauthorized: false } }
+    : {}
+const databaseConfig = { connectionString, ...ssl }
 const pool = new Pool(databaseConfig)
 pool.on('connect', (err, client) => {
   console.log('connected to db')

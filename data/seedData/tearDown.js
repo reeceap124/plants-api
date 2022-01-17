@@ -10,7 +10,7 @@ async function cleanup() {
     return console.log('cleanupSkipped')
   }
   await client.query(
-    'truncate plants, inventory_statuses restart identity cascade'
+    'truncate plants, inventory_statuses, sale_venues, sales, users restart identity cascade'
   )
   console.log('Cleaned up test db')
   await client.release()
