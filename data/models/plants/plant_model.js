@@ -2,6 +2,7 @@ const { errorMsg } = require('../../../utils/helpers')
 module.exports = {
   add,
   find,
+  findAll,
   update,
   remove
 }
@@ -41,12 +42,6 @@ async function add(pg, plant) {
 }
 
 async function find(pg, id) {
-  //how can I pass in object to get something thing like:
-  /*
-    Select * where $1 = $2
-    or
-    Select * where $1 = ANY($2)
-    */
   try {
     const { rows } = await pg.query(
       `
@@ -59,6 +54,17 @@ async function find(pg, id) {
     return rows.length ? rows[0] : null
   } catch (error) {
     return errorMsg(error, `Failed to find plant with id: ${id}`)
+  }
+}
+
+async function findAll(pg) {
+  try {
+    const { rows } = await pg.query(`
+      SELECT * FROM plants;
+    `)
+    return rows
+  } catch (error) {
+    return errorMsg(error, 'Failed to get all the plants')
   }
 }
 

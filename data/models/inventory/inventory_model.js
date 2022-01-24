@@ -3,6 +3,7 @@ const { errorMsg } = require('../../../utils/helpers')
 module.exports = {
   add,
   find,
+  findUsersPlants,
   update
 }
 
@@ -48,6 +49,24 @@ async function find(pg, id) {
     return rows?.length ? rows[0] : null
   } catch (err) {
     return errorMsg(err, 'Failed to get inventory item with id: ' + id)
+  }
+}
+
+async function findUsersPlants(pg, user) {
+  try {
+    const { rows } = await pg.query(
+      `
+      select i.*, p.id as plant_id, p.common_name, p.scientific_name, s.id as status_id, s.status from inventory i
+JOIN plants p on i.plants_key = p.id
+JOIN inventory_statuses s on i.status_key = s.id
+JOIN users u on i.users_key = u.id
+WHERE u.id = $1
+    `,
+      [user]
+    )
+    return rows
+  } catch (error) {
+    return errorMsg(error, 'Failed to get inventory for user: ' + user)
   }
 }
 

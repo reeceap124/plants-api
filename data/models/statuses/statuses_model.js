@@ -1,9 +1,10 @@
-const { errorMsg } = require("../../../utils/helpers");
+const { errorMsg } = require('../../../utils/helpers')
 
 module.exports = {
   add,
-  find
-};
+  find,
+  findAll
+}
 
 async function add(pg, status) {
   try {
@@ -14,10 +15,10 @@ async function add(pg, status) {
         RETURNING *;
         `,
       [status]
-    );
-    return rows[0];
+    )
+    return rows[0]
   } catch (err) {
-    return errorMsg(err, "Failed to insert status: " + status);
+    return errorMsg(err, 'Failed to insert status: ' + status)
   }
 }
 
@@ -29,9 +30,19 @@ async function find(pg, id) {
         WHERE id = $1
         `,
       [id]
-    );
-    return rows[0];
+    )
+    return rows[0]
   } catch (err) {
-    return errorMsg(err, "Failed to find status at id: " + id);
+    return errorMsg(err, 'Failed to find status at id: ' + id)
+  }
+}
+
+async function findAll(pg) {
+  try {
+    const { rows } = await pg.query(`
+    SELECT * FROM inventory_statuses;`)
+    return rows
+  } catch (error) {
+    return errorMsg(error, 'Failed to get statuses')
   }
 }

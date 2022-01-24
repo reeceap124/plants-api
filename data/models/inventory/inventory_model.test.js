@@ -19,6 +19,14 @@ describe('inventory tests', () => {
     await pg.end()
   })
 
+  it('should find all plants for a user', async () => {
+    const shouldBe = await client.query(
+      `SELECT count(*)::integer FROM inventory WHERE users_key = 1`
+    )
+    const plants = await model.findUsersPlants(client, 1)
+    expect(plants.length).toBe(shouldBe.rows[0].count)
+  })
+
   it('should add a parent inventory item and child', async () => {
     const newItem = await model.add(client, {
       plants_key: plant.rows[0].id,

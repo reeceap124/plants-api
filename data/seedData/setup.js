@@ -5,6 +5,10 @@ const setup = async () => {
     `truncate plants, inventory_statuses, sale_venues, sales, users restart identity cascade`
   )
   await client.query(`
+    INSERT INTO users (username, email, password, active)
+    VALUES ('tester', 'test@email.com', 'testPass', true)
+  `)
+  await client.query(`
     INSERT INTO plants (common_name, scientific_name)
     VALUES 
     ('snake plant', 'Sansevieria trifasciata')
@@ -20,8 +24,8 @@ const setup = async () => {
     ('dead');
   `)
   await client.query(`
-  INSERT INTO inventory (plants_key, status_key, cost, ancestry)
-  VALUES (1, 4, 100, '1'), (1, 4, 0, '1.2'), (1, 4, 0, '1.3'), (1, 4, 0, '1.4')
+  INSERT INTO inventory (plants_key, status_key, cost, ancestry, acquired_from, acquired_date, users_key)
+  VALUES (1, 4, 100, '1', null, NOW(), 1), (1, 4, 0, '1.2', null, NOW(), 1), (1, 4, 0, '1.3', null, NOW(), 1), (1, 4, 0, '1.4', null, NOW(), 1)
   `)
   await client.query(`
   INSERT INTO sale_venues (name)
