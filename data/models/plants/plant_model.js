@@ -25,15 +25,21 @@ function dynamicUpdate(table, change, where) {
 }
 */
 async function add(pg, plant) {
-  const { common_name, commonName, scientific_name, scientificName } = plant
+  const {
+    common_name,
+    commonName,
+    scientific_name,
+    scientificName,
+    creator_key
+  } = plant
   try {
     const { rows } = await pg.query(
       `
-        INSERT INTO public.plants (common_name, scientific_name)
-        VALUES ($1, $2)
+        INSERT INTO public.plants (common_name, scientific_name, creator_key)
+        VALUES ($1, $2, $3)
         RETURNING *
     `,
-      [common_name || commonName, scientific_name || scientificName]
+      [common_name, scientific_name, creator_key]
     )
     return rows[0]
   } catch (error) {
@@ -57,11 +63,14 @@ async function find(pg, id) {
   }
 }
 
-async function findAll(pg) {
+async function findAll(pg, id) {
   try {
-    const { rows } = await pg.query(`
-      SELECT * FROM plants;
-    `)
+    const { rows } = await pg.query(
+      `
+      SELECT * FROM plants WHERE creator_key = $1;
+    `,
+      [id]
+    )
     return rows
   } catch (error) {
     return errorMsg(error, 'Failed to get all the plants')
@@ -73,13 +82,14 @@ async function update(pg, change) {
     const { rows } = await pg.query(
       `
     UPDATE public.plants
-    SET common_name = $1, scientific_name = $2
-    WHERE id = $3
+    SET common_name = $1, scientific_name = $2, creator_key = $3
+    WHERE id = $4
     RETURNING *
     `,
       [
-        change.common_name || change.commonName,
-        change.scientific_name || change.scientificName,
+        change.common_name,
+        change.scientific_name,
+        change.creator_key,
         change.id
       ]
     )

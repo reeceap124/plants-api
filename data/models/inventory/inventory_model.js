@@ -8,7 +8,7 @@ module.exports = {
 }
 
 async function add(pg, item, parent = null) {
-  const { plants_key, status_key, cost } = item
+  const { plants_key, status_key, cost, acquired_from, acquired_date } = item
   try {
     const parentPlant = await find(pg, parent)
     if (parentPlant && parentPlant.plants_key !== plants_key) {
@@ -16,18 +16,25 @@ async function add(pg, item, parent = null) {
     }
     const { rows } = await pg.query(
       `
-    with inv_insert as(insert into inventory (plants_key, ancestry, status_key, cost) values (
+    with inv_insert as(insert into inventory (plants_key, ancestry, status_key, cost, acquired_from, acquired_date) values (
         $1, 
         -- If parent exists, prefix its ancestry onto plant to be added
         coalesce( $2, '') || (select currval(pg_get_serial_sequence('inventory', 'id'))::text)::ltree, 
         $3, 
-        $4)
+        $4, $5, $6)
     RETURNING *)
-    select i.*, i.cost::integer, p.common_name, p.scientific_name, s.status from inv_insert i
+    select i.*, p.id as plant_id, p.common_name, p.scientific_name, s.id as status_id, s.status from inv_insert i
     join plants p on i.plants_key = p.id
     join inventory_statuses s on i.status_key = s.id
     `,
-      [plants_key, parentPlant?.ancestry, status_key, cost]
+      [
+        plants_key,
+        parentPlant?.ancestry,
+        status_key,
+        cost,
+        acquired_from,
+        acquired_date
+      ]
     )
     return rows[0]
   } catch (err) {
@@ -57,10 +64,10 @@ async function findUsersPlants(pg, user) {
     const { rows } = await pg.query(
       `
       select i.*, p.id as plant_id, p.common_name, p.scientific_name, s.id as status_id, s.status from inventory i
-JOIN plants p on i.plants_key = p.id
-JOIN inventory_statuses s on i.status_key = s.id
-JOIN users u on i.users_key = u.id
-WHERE u.id = $1
+      JOIN plants p on i.plants_key = p.id
+      JOIN inventory_statuses s on i.status_key = s.id
+      JOIN users u on i.users_key = u.id
+      WHERE u.id = $1
     `,
       [user]
     )

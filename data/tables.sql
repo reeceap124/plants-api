@@ -20,7 +20,8 @@ CREATE TABLE public.plants
     id bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
     common_name text NOT NULL,
     scientific_name text,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    CONSTRAINT plants_creator_key_fkey FOREIGN KEY (creator_key) REFERENCES users (id)
 );
 -- INVENTORY STATUSES
 CREATE TABLE public.inventory_statuses

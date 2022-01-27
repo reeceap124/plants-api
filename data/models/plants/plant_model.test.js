@@ -36,8 +36,8 @@ describe('Functions for plant table', () => {
     expect(found.common_name).toBe('2test common2')
   })
 
-  it('should find all plants', async () => {
-    const plants = await model.findAll(client)
+  it('should find all plants for user with id of 1', async () => {
+    const plants = await model.findAll(client, 1)
     expect(plants.length).toBeGreaterThanOrEqual(1)
   })
 
