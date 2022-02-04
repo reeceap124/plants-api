@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS public.inventory
     acquired_from text,
     acquired_date date DEFAULT NOW()::date,
     users_key bigint NOT NULL,
+    medium_key bigint,
     CONSTRAINT inventory_pkey PRIMARY KEY (id),
     CONSTRAINT inventory_plants_key_fkey FOREIGN KEY (plants_key)
         REFERENCES public.plants (id) MATCH SIMPLE
@@ -51,7 +52,12 @@ CREATE TABLE IF NOT EXISTS public.inventory
         REFERENCES public.inventory_statuses (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION,
-    CONSTRAINT inventory_users_key_fkey FOREIGN KEY (users_key)
+    CONSTRAINT inventory_users_key_fkey FOREIGN KEY
+    CONSTRAINT inventory_medium_key_fkey FOREIGN KEY(medium_key) 
+        REFERENCES public.growing_medium (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION,
+    (users_key)
         REFERENCES public.users (id) MATCH SIMPLE
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
@@ -85,6 +91,73 @@ CREATE TABLE IF NOT EXISTS public.sales
         ON UPDATE NO ACTION
         ON DELETE NO ACTION
 );
+
+CREATE TABLE public.growing_medium
+(
+    id bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
+    medium text NOT NULL,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE public.medium_history
+(
+    id bigint NOT NULL GENERATED ALWAYS AS IDENTITY,
+    inventory_key bigint NOT NULL,
+    medium_key bigint NOT NULL,
+    insertion_date date NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (inventory_key)
+        REFERENCES public.inventory (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID,
+    FOREIGN KEY (medium_key)
+        REFERENCES public.growing_medium (id) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID
+);
+
+CREATE OR REPLACE FUNCTION medium_history_audit_trigger_func()
+RETURNS trigger AS $body$
+BEGIN
+   if (UPPER(TG_OP) = 'INSERT') then
+       INSERT INTO medium_history (
+           inventory_key,
+		   medium_key,
+		   insertion_date
+       )
+       VALUES(
+           NEW.id,
+		   NEW.medium_key,
+		   NOW()::date
+       );
+             
+       RETURN NEW;
+	  elsif (UPPER(TG_OP) = 'UPDATE' AND OLD.medium_key != NEW.medium_key) then
+           INSERT INTO medium_history (
+           inventory_key,
+		   medium_key,
+		   insertion_date
+       )
+       VALUES(
+           OLD.id,
+		   NEW.medium_key,
+		   NOW()::date
+       );
+             
+       RETURN NEW;
+	   else RETURN null;
+   end if;   
+END;
+$body$
+LANGUAGE plpgsql;
+
+CREATE TRIGGER medium_history_audit_trigger
+AFTER INSERT OR UPDATE
+ON inventory
+FOR EACH ROW
+EXECUTE FUNCTION medium_history_audit_trigger_func();
 
 -- where it came from
 -- acquire date

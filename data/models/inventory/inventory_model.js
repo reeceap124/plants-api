@@ -7,25 +7,36 @@ module.exports = {
   update
 }
 
-async function add(pg, item, parent = null) {
-  const { plants_key, status_key, cost, acquired_from, acquired_date } = item
+async function add(pg, item) {
+  const {
+    plants_key,
+    status_key,
+    cost,
+    acquired_from,
+    acquired_date,
+    users_key,
+    medium_key
+  } = item
+  const ancestry = item.ancestry || null
   try {
-    const parentPlant = await find(pg, parent)
+    const parentPlant = ancestry ? await find(pg, ancestry) : null
     if (parentPlant && parentPlant.plants_key !== plants_key) {
       throw new Error('Parent plant type must match the new plant to be added')
     }
+    console.log('prepped submission', item, parentPlant)
     const { rows } = await pg.query(
       `
-    with inv_insert as(insert into inventory (plants_key, ancestry, status_key, cost, acquired_from, acquired_date) values (
+    with inv_insert as(insert into inventory (plants_key, ancestry, status_key, cost, acquired_from, acquired_date, users_key, medium_key) values (
         $1, 
         -- If parent exists, prefix its ancestry onto plant to be added
         coalesce( $2, '') || (select currval(pg_get_serial_sequence('inventory', 'id'))::text)::ltree, 
         $3, 
-        $4, $5, $6)
+        $4, $5, $6, $7, $8)
     RETURNING *)
-    select i.*, p.id as plant_id, p.common_name, p.scientific_name, s.id as status_id, s.status from inv_insert i
+    select i.*, common_name, scientific_name, status, medium from inv_insert i
     join plants p on i.plants_key = p.id
     join inventory_statuses s on i.status_key = s.id
+    join growing_medium m on m.id = i.medium_key
     `,
       [
         plants_key,
@@ -33,9 +44,12 @@ async function add(pg, item, parent = null) {
         status_key,
         cost,
         acquired_from,
-        acquired_date
+        acquired_date,
+        users_key,
+        medium_key
       ]
     )
+    console.log('inventory returned', rows)
     return rows[0]
   } catch (err) {
     return errorMsg(err, 'Failed to add plant')
@@ -63,10 +77,11 @@ async function findUsersPlants(pg, user) {
   try {
     const { rows } = await pg.query(
       `
-      select i.*, p.id as plant_id, p.common_name, p.scientific_name, s.id as status_id, s.status from inventory i
+      select i.*, common_name, scientific_name, status, medium from inventory i
       JOIN plants p on i.plants_key = p.id
       JOIN inventory_statuses s on i.status_key = s.id
       JOIN users u on i.users_key = u.id
+	    JOIN growing_medium m on i.medium_key = m.id
       WHERE u.id = $1
     `,
       [user]
@@ -91,7 +106,8 @@ async function update(pg, change = {}, toChange = { id: 0 }) {
     plants_key: 'plants_key',
     ancestry: 'ancestry',
     status_key: 'status_key',
-    cost: 'cost'
+    cost: 'cost',
+    medium_key: 'medium_key'
   }
 
   let base = ['UPDATE ', 'inventory', ' SET']
@@ -124,9 +140,10 @@ async function update(pg, change = {}, toChange = { id: 0 }) {
   )
   const query = `
     with updated as (${subQuery})
-    SELECT i.id, i.plants_key, i.ancestry, i.status_key, i.cost::integer, p.common_name, p.scientific_name, s.status from updated i
+    SELECT i.*, common_name, scientific_name, status, medium from updated i
     JOIN plants p on i.plants_key = p.id
     JOIN inventory_statuses s on i.status_key = s.id
+    JOIN growing_medium m on i.medium_key = m.id
   `
   try {
     const { rows } = await pg.query(query, values)

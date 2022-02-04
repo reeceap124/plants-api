@@ -20,6 +20,7 @@ router.get('/all/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
   const client = await pg.connect()
+  // console.log('in inventory post', req.body)
   const { plant, parent } = req.body
   try {
     const newInventory = await Inventory.add(client, plant, parent)

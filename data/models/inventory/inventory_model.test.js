@@ -31,7 +31,11 @@ describe('inventory tests', () => {
     const newItem = await model.add(client, {
       plants_key: plant.rows[0].id,
       status_key: statuses.rows[0].id,
-      cost: 100
+      cost: 100,
+      acquired_vendor: 'shady vendor',
+      acquired_date: new Date(),
+      users_key: 1,
+      medium_key: 2
     })
     expect(newItem.common_name).toBe('snake plant')
     expect(newItem.status).toBe('for sale')
@@ -41,7 +45,10 @@ describe('inventory tests', () => {
       {
         plants_key: newItem.plants_key,
         status_key: newItem.status_key,
-        cost: 0
+        cost: 0,
+        acquired_date: new Date(),
+        users_key: newItem.users_key,
+        medium_key: 2
       },
       newItem.id
     )
@@ -57,14 +64,22 @@ describe('inventory tests', () => {
     const motherItem1 = await model.add(client, {
       plants_key: plant.rows[0].id,
       status_key: statuses.rows[0].id,
-      cost: 100
+      cost: 100,
+      acquired_from: 'shady vendor',
+      acquired_date: new Date(),
+      users_key: 1,
+      medium_key: 2
     })
     const motherItem2 = await model.add(
       client,
       {
         plants_key: plant.rows[0].id,
         status_key: statuses.rows[0].id,
-        cost: 75
+        cost: 75,
+        acquired_from: 'shady vendor',
+        acquired_date: new Date(),
+        users_key: 1,
+        medium_key: 2
       },
       motherItem1.id
     )
@@ -74,7 +89,11 @@ describe('inventory tests', () => {
       {
         plants_key: motherItem1.plants_key,
         status_key: motherItem1.status_key,
-        cost: 50
+        cost: 50,
+        acquired_from: 'shady vendor',
+        acquired_date: new Date(),
+        users_key: 1,
+        medium_key: 2
       },
       motherItem2.id
     )
@@ -88,6 +107,6 @@ describe('inventory tests', () => {
       { id: childItem.id }
     )
     expect(updatedChild[0].id).toBe(childItem.id)
-    expect(updatedChild[0].cost).toBe(0)
+    expect(parseInt(updatedChild[0].cost)).toBe(0)
   })
 })

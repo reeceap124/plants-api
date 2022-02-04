@@ -5,6 +5,9 @@ const setup = async () => {
     `truncate plants, inventory_statuses, sale_venues, sales, users restart identity cascade`
   )
   await client.query(`
+    INSERT INTO growing_medium (medium) VALUES ('soil'), ('spagnum moss'), ('water'), ('perlite')
+  `)
+  await client.query(`
     INSERT INTO users (username, email, password, active)
     VALUES ('tester', 'test@email.com', 'testPass', true)
   `)
