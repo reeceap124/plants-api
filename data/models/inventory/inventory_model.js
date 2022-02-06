@@ -17,13 +17,13 @@ async function add(pg, item) {
     users_key,
     medium_key
   } = item
-  const ancestry = item.ancestry || null
+  const parent = item.parent || null
   try {
-    const parentPlant = ancestry ? await find(pg, ancestry) : null
+    const parentPlant = parent ? await find(pg, parent) : null
     if (parentPlant && parentPlant.plants_key !== plants_key) {
       throw new Error('Parent plant type must match the new plant to be added')
     }
-    console.log('prepped submission', item, parentPlant)
+    // console.log('prepped submission', item, parentPlant)
     const { rows } = await pg.query(
       `
     with inv_insert as(insert into inventory (plants_key, ancestry, status_key, cost, acquired_from, acquired_date, users_key, medium_key) values (
@@ -49,7 +49,7 @@ async function add(pg, item) {
         medium_key
       ]
     )
-    console.log('inventory returned', rows)
+    // console.log('inventory returned', rows)
     return rows[0]
   } catch (err) {
     return errorMsg(err, 'Failed to add plant')
@@ -107,6 +107,9 @@ async function update(pg, change = {}, toChange = { id: 0 }) {
     ancestry: 'ancestry',
     status_key: 'status_key',
     cost: 'cost',
+    acquired_from: 'acquired_from',
+    acquired_date: 'acquired_date',
+    users_key: 'users_key',
     medium_key: 'medium_key'
   }
 
@@ -147,6 +150,7 @@ async function update(pg, change = {}, toChange = { id: 0 }) {
   `
   try {
     const { rows } = await pg.query(query, values)
+    console.log('*** RETURNED Updates', rows)
     return rows
   } catch (err) {
     return errorMsg(err, 'Failed to update inventory for: ' + toChange)

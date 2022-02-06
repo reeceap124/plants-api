@@ -25,13 +25,7 @@ function dynamicUpdate(table, change, where) {
 }
 */
 async function add(pg, plant) {
-  const {
-    common_name,
-    commonName,
-    scientific_name,
-    scientificName,
-    creator_key
-  } = plant
+  const { common_name, scientific_name, creator_key } = plant
   try {
     const { rows } = await pg.query(
       `

@@ -16,8 +16,9 @@ describe('Functions for plant table', () => {
     )
     const initialCount = initialData.rows[0].count
     const newPlant = await model.add(client, {
-      commonName: 'test common',
-      scientificName: 'test scientific'
+      common_name: 'test common',
+      scientific_name: 'test scientific',
+      creator_key: 1
     })
     expect(newPlant.common_name).toBe('test common')
     expect(newPlant.scientific_name).toBe('test scientific')
@@ -29,7 +30,8 @@ describe('Functions for plant table', () => {
   it('should find plant by id', async () => {
     const toFind = await model.add(client, {
       common_name: '2test common2',
-      scientific_name: '2test scientific2'
+      scientific_name: '2test scientific2',
+      creator_key: 1
     })
     const found = await model.find(client, toFind.id)
     expect(found.id).toBe(toFind.id)
@@ -44,7 +46,8 @@ describe('Functions for plant table', () => {
   it('should update a plant', async () => {
     const toUpdate = await model.add(client, {
       common_name: 'to update',
-      scientific_name: 'to update scientifically'
+      scientific_name: 'to update scientifically',
+      creator_key: 1
     })
     const update = { ...toUpdate, common_name: 'updated common' }
     const updated = await model.update(client, update)
@@ -55,7 +58,8 @@ describe('Functions for plant table', () => {
   it('should remove plants', async () => {
     const toDelete = await model.add(client, {
       common_name: 'to be removed',
-      scientific_name: 'to be removed scientifically'
+      scientific_name: 'to be removed scientifically',
+      creator_key: 1
     })
     await model.remove(client, toDelete.id)
     const deleted = await model.find(client, toDelete.id)
