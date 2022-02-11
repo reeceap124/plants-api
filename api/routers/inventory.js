@@ -21,9 +21,9 @@ router.get('/all/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   const client = await pg.connect()
   // console.log('in inventory post', req.body)
-  const { plant, parent } = req.body
+  const { plant } = req.body
   try {
-    const newInventory = await Inventory.add(client, plant, parent)
+    const newInventory = await Inventory.add(client, plant)
     return res.status(201).json(newInventory)
   } catch (error) {
     return res.status(500).json(errorMsg(error, 'Failed to add inventory item'))

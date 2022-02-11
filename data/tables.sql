@@ -166,3 +166,56 @@ EXECUTE FUNCTION medium_history_audit_trigger_func();
 -- how much an original purchase has paid off
 -- keep track of plant statuses
 -- tag scanning ???
+
+
+    --   select i.*, p.id as plant_id, p.common_name, p.scientific_name, s.id as status_id, s.status, m.id as medium_id, medium from inventory i
+    --   JOIN plants p on i.plants_key = p.id
+    --   JOIN inventory_statuses s on i.status_key = s.id
+    --   JOIN users u on i.users_key = u.id
+	--   JOIN growing_medium m on i.medium_key = m.id
+    --   WHERE u.id = 1
+
+
+--     CREATE OR REPLACE FUNCTION medium_history_audit_trigger_func()
+-- RETURNS trigger AS $body$
+-- BEGIN
+--    if (UPPER(TG_OP) = 'INSERT') then
+--        INSERT INTO medium_history (
+--            inventory_key,
+-- 		   medium_key,
+-- 		   insertion_date
+--        )
+--        VALUES(
+--            NEW.id,
+-- 		   NEW.medium_key,
+-- 		   NOW()::date
+--        );
+             
+--        RETURN NEW;
+-- 	  elsif (UPPER(TG_OP) = 'UPDATE' AND OLD.medium_key != NEW.medium_key) then
+--            INSERT INTO medium_history (
+--            inventory_key,
+-- 		   medium_key,
+-- 		   insertion_date
+--        )
+--        VALUES(
+--            OLD.id,
+-- 		   NEW.medium_key,
+-- 		   NOW()::date
+--        );
+             
+--        RETURN NEW;
+-- 	   else RETURN null;
+--    end if;   
+-- END;
+-- $body$
+-- LANGUAGE plpgsql
+
+
+
+
+-- CREATE TRIGGER medium_history_audit_trigger
+-- AFTER INSERT OR UPDATE
+-- ON inventory
+-- FOR EACH ROW
+-- EXECUTE FUNCTION medium_history_audit_trigger_func()
