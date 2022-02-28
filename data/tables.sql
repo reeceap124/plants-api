@@ -43,6 +43,7 @@ CREATE TABLE IF NOT EXISTS public.inventory
     acquired_date date DEFAULT NOW()::date,
     users_key bigint NOT NULL,
     medium_key bigint,
+    notes text,
     CONSTRAINT inventory_pkey PRIMARY KEY (id),
     CONSTRAINT inventory_plants_key_fkey FOREIGN KEY (plants_key)
         REFERENCES public.plants (id) MATCH SIMPLE

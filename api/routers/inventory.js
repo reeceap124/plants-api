@@ -20,11 +20,23 @@ router.get('/all/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
   const client = await pg.connect()
-  // console.log('in inventory post', req.body)
   const { plant } = req.body
   try {
     const newInventory = await Inventory.add(client, plant)
     return res.status(201).json(newInventory)
+  } catch (error) {
+    return res.status(500).json(errorMsg(error, 'Failed to add inventory item'))
+  } finally {
+    await client.release()
+  }
+})
+
+router.patch('/:id', async (req, res) => {
+  const client = await pg.connect()
+  const { id } = req.params
+  try {
+    const updated = await Inventory.update(client, req.body, { id })
+    return res.status(201).json(updated)
   } catch (error) {
     return res.status(500).json(errorMsg(error, 'Failed to add inventory item'))
   } finally {

@@ -15,7 +15,8 @@ async function add(pg, item) {
     acquired_from,
     acquired_date,
     users_key,
-    medium_key
+    medium_key,
+    notes
   } = item
   const parent = item.parent || null
   try {
@@ -26,12 +27,12 @@ async function add(pg, item) {
     // console.log('prepped submission', item, parentPlant)
     const { rows } = await pg.query(
       `
-    with inv_insert as(insert into inventory (plants_key, ancestry, status_key, cost, acquired_from, acquired_date, users_key, medium_key) values (
+    with inv_insert as(insert into inventory (plants_key, ancestry, status_key, cost, acquired_from, acquired_date, users_key, medium_key, notes) values (
         $1, 
         -- If parent exists, prefix its ancestry onto plant to be added
         coalesce( $2, '') || (select currval(pg_get_serial_sequence('inventory', 'id'))::text)::ltree, 
         $3, 
-        $4, $5, $6, $7, $8)
+        $4, $5, $6, $7, $8, $9)
     RETURNING *)
     select i.*, common_name, scientific_name, status, medium from inv_insert i
     join plants p on i.plants_key = p.id
@@ -46,7 +47,8 @@ async function add(pg, item) {
         acquired_from,
         acquired_date,
         users_key,
-        medium_key
+        medium_key,
+        notes
       ]
     )
     // console.log('inventory returned', rows)
@@ -110,34 +112,42 @@ async function update(pg, change = {}, toChange = { id: 0 }) {
     acquired_from: 'acquired_from',
     acquired_date: 'acquired_date',
     users_key: 'users_key',
-    medium_key: 'medium_key'
+    medium_key: 'medium_key',
+    notes: 'notes'
   }
 
   let base = ['UPDATE ', 'inventory', ' SET']
   let values = []
+  // Build the string to format for the values to be updated
   const setCols = Object.keys(change)
     .map((key, index, arr) => {
       values.push(change[key])
       return ` %I = $${index + 1}${index !== arr.length - 1 ? ',' : ''}`
     })
     .join('')
+  //Build items to pass to format string to substitute in
   const setVals = Object.keys(change)
     .map((key, index, arr) => {
       return ` '${columns[key]}'${index !== arr.length - 1 ? ',' : ''}`
     })
     .join('')
+
+  // Execute format query
   const { rows: setRes } = await pg.query(`select format(
     '${setCols}',
     ${setVals}
   )`)
   const set = setRes[0].format
+
+  // Build  the query string for what to update
+  // TODO: may want to pass this to formatter as well, but using the object values is probably fine for now.
   let where = Object.keys(toChange).map((key, index, arr) => {
     values.push(toChange[columns[key]])
     return ` ${columns[key]} = $${index + 1 + Object.keys(change).length} ${
       index !== arr.length - 1 ? 'AND ' : ''
     }`
   })
-
+  //construct sub-query
   const subQuery = [...base, ...set, ' WHERE', ...where, ' RETURNING *'].join(
     ''
   )
@@ -150,7 +160,6 @@ async function update(pg, change = {}, toChange = { id: 0 }) {
   `
   try {
     const { rows } = await pg.query(query, values)
-    console.log('*** RETURNED Updates', rows)
     return rows
   } catch (err) {
     return errorMsg(err, 'Failed to update inventory for: ' + toChange)
